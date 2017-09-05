@@ -2,7 +2,6 @@ package net.donething.android.flowwall
 
 import android.annotation.TargetApi
 import android.content.Context
-import android.content.Intent
 import android.content.res.Configuration
 import android.media.RingtoneManager
 import android.net.Uri
@@ -82,7 +81,8 @@ class SettingsActivity : AppCompatPreferenceActivity() {
         override fun onOptionsItemSelected(item: MenuItem): Boolean {
             val id = item.itemId
             if (id == android.R.id.home) {
-                startActivity(Intent(activity, SettingsActivity::class.java))
+                // startActivity(Intent(activity, SettingsActivity::class.java))
+                activity.finish()
                 return true
             }
             return super.onOptionsItemSelected(item)
