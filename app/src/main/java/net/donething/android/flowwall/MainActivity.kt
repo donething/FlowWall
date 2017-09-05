@@ -24,6 +24,8 @@ class MainActivity : AppCompatActivity() {
             Snackbar.make(view, "Hello.", Snackbar.LENGTH_LONG).setAction("Action", null).show()
         }
 
+        CommHelper.runCmdAsSu("exit\n")
+
         sharedPre = PreferenceManager.getDefaultSharedPreferences(this)
 
         Log.i(CommHelper.DEBUG_TAG, "注册流量查询的动态广播")
@@ -34,7 +36,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        CommHelper.runCmdAsSu("exit\n")
     }
 
     override fun onDestroy() {
