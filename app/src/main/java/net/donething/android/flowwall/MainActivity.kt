@@ -28,6 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         sharedPre = PreferenceManager.getDefaultSharedPreferences(this)
 
+        // 当FlowQueryService端停止手动停止时，需要发送广播通知MainActivity更新UI
         Log.i(CommHelper.DEBUG_TAG, "注册流量查询的动态广播")
         val filter = IntentFilter()
         filter.addAction(CommHelper.QUERY_SERVICE_ACTION)
@@ -49,10 +50,9 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.menu_main, menu)
         this.switchQueryService = menu.findItem(R.id.menuQueryService).actionView.findViewById<Switch>(R.id.swQueryService)
         val switchQueryService = this.switchQueryService ?: return true
-        switchQueryService.isChecked = sharedPre?.getBoolean(CommHelper.HAD_START_QUERY, false) ?: false
+        switchQueryService.isChecked = sharedPre?.getBoolean(CommHelper.IS_FLOW_QUERY_SERVICE_RUNNING, false) ?: false
         switchQueryService.setOnCheckedChangeListener {
             btn, isChecked ->
-            sharedPre?.edit()?.putBoolean(CommHelper.HAD_START_QUERY, isChecked)?.apply()
             startOrStopQueryService(btn, isChecked)
         }
         return true

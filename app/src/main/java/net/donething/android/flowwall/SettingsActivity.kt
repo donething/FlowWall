@@ -59,7 +59,6 @@ class SettingsActivity : AppCompatPreferenceActivity() {
     override fun isValidFragment(fragmentName: String): Boolean {
         return PreferenceFragment::class.java.name == fragmentName || GeneralPreferenceFragment::class.java.name == fragmentName
     }
-
     /**
      * This fragment shows general preferences only. It is used when the
      * activity is showing a two-pane settings UI.
@@ -76,6 +75,8 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             // updated to reflect the new value, per the Android Design
             // guidelines.
             bindPreferenceSummaryToValue(findPreference(CommHelper.PHONE_NUM))
+            bindPreferenceSummaryToValue(findPreference(CommHelper.QUERY_FREQUENCY))
+            bindPreferenceSummaryToValue(findPreference(CommHelper.FLOW_INTERVAL))
         }
 
         override fun onOptionsItemSelected(item: MenuItem): Boolean {
@@ -110,6 +111,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
                             listPreference.entries[index]
                         else
                             null)
+                listPreference.setValueIndex(1)
 
             } else if (preference is RingtonePreference) {
                 // For ringtone preferences, look up the correct display value

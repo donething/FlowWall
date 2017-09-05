@@ -1,16 +1,42 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- NOTE: EditTextPreference accepts EditText attributes. -->
     <!-- NOTE: EditTextPreference's summary should be set to its value by the activity code. -->
-    <EditTextPreference
-        android:inputType="number"
-        android:key="phone_num"
-        android:maxLines="1"
-        android:selectAllOnFocus="true"
-        android:singleLine="true"
-        android:title="@string/title_phone" />
+    <PreferenceCategory android:title="@string/account_info_title">
+        <EditTextPreference
+            android:inputType="number"
+            android:key="phone_num"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/phone_num_title" />
+    </PreferenceCategory>
 
-    <SwitchPreference
-        android:key="is_boot_start"
-        android:title="@string/sw_title_boot_start"
-        android:summary="@string/sw_summary_boot_start"/>
+    <PreferenceCategory android:title="@string/query_setting_title">
+        <ListPreference
+            android:defaultValue="3"
+            android:entries="@array/query_frequency_titles"
+            android:entryValues="@array/query_frequency_values"
+            android:key="query_frequency"
+            android:negativeButtonText="@null"
+            android:positiveButtonText="@null"
+            android:title="@string/query_frequency_title" />
+        <EditTextPreference
+            android:defaultValue="3.0"
+            android:inputType="numberDecimal"
+            android:key="flow_interval"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="@string/flow_interval_title" />
+    </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/extend_setting_title">
+        <SwitchPreference
+            android:key="is_boot_start"
+            android:summary="@string/boot_start_summary"
+            android:title="@string/boot_start_title" />
+        <SwitchPreference
+            android:key="is_auto_disconnect_data"
+            android:summary="@string/is_auto_disconnect_data_summary"
+            android:title="@string/is_auto_disconnect_data_title" />
+    </PreferenceCategory>
 </PreferenceScreen>

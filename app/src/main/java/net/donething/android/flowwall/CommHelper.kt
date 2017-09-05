@@ -47,14 +47,20 @@ class CommHelper {
 
         val DEBUG_TAG = "[Flow Wall]"
 
+        val CMD_DISABLE_DATA = "svc data disable\n"   // shell关闭移动数据连接的命令
+
+        // 数据连接类型
         var TYPE_NOT_CONNECTED = 0
         var TYPE_WIFI = 1
         var TYPE_MOBILE = 2
 
         // SharedPreference key name
-        val HAD_START_QUERY = "had_start_query"     // 是否已经启动了流量查询服务
+        val IS_FLOW_QUERY_SERVICE_RUNNING = "is_flow_query_service_running"     // 是否已经启动了流量查询服务
         val PHONE_NUM = "phone_num"         // 带查询的手机号
         val IS_BOOT_START = "is_boot_start"     // 是否开机启动查询服务
+        val QUERY_FREQUENCY = "query_frequency"
+        val FLOW_INTERVAL = "flow_interval"
+        val IS_AUTO_DISCONNECT_DATA = "is_auto_disconnect_data"
 
         // MainActivity and FlowQueryService Broadcast
         val QUERY_SERVICE_ACTION = "net.donething.android.flowwall.query_service_ACTION"
