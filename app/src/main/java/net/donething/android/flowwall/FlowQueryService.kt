@@ -33,6 +33,7 @@ class FlowQueryService : Service() {
     }
 
     override fun onStartCommand(intent: Intent, flags: Int, startId: Int): Int {
+        super.onStartCommand(intent, flags, startId)
         sharedPre?.edit()?.putBoolean(CommHelper.IS_FLOW_QUERY_SERVICE_RUNNING, true)?.apply()    // 服务已开启
         phoneNum = sharedPre?.getString(CommHelper.PHONE_NUM, "") ?: ""
         queryFrequency = sharedPre?.getString(CommHelper.QUERY_FREQUENCY, queryFrequency.toString())?.toIntOrNull() ?: queryFrequency
@@ -51,7 +52,7 @@ class FlowQueryService : Service() {
         } catch (ex: Exception) {
             ex.printStackTrace()
         }
-        return super.onStartCommand(intent, flags, startId)
+        return START_REDELIVER_INTENT
     }
 
     override fun onDestroy() {
@@ -65,7 +66,7 @@ class FlowQueryService : Service() {
     }
 
     // 定时器
-    val queryTask = object : TimerTask() {
+    private val queryTask = object : TimerTask() {
         override fun run() {
             queryFlow()
         }
@@ -76,7 +77,7 @@ class FlowQueryService : Service() {
      */
     private fun queryFlow() {
         // 非移动网络时，无需查询流量
-        if (!(connManager?.activeNetworkInfo?.isConnected ?: false && connManager?.activeNetworkInfo?.type == ConnectivityManager.TYPE_MOBILE)) {
+        if (CommHelper.getConnectivityStatus(this).toString().toInt() != ConnectivityManager.TYPE_MOBILE) {
             makeNotification("暂停流量查询", "当前为非移动网络，无需查询流量")
             return
         }

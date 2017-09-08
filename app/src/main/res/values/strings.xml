@@ -25,7 +25,7 @@
     <string name="phone_num_title">手机号码</string>
     <string name="boot_start_title">开机启动</string>
     <string name="boot_start_summary">是否开机自启动流量查询服务</string>
-    <string name="query_frequency_title">查询间隔（分钟）</string>
+    <string name="query_frequency_title">查询间隔</string>
     <string name="flow_interval_title">断网流量差（MB）</string>
     <string name="account_info_title">账号设置</string>
     <string name="query_setting_title">查询设置</string>
