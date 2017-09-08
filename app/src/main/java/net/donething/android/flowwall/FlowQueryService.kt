@@ -38,6 +38,7 @@ class FlowQueryService : Service() {
         queryFrequency = sharedPre?.getString(CommHelper.QUERY_FREQUENCY, queryFrequency.toString())?.toIntOrNull() ?: queryFrequency
         flowInterval = sharedPre?.getString(CommHelper.FLOW_INTERVAL, flowInterval.toString())?.toFloatOrNull() ?: flowInterval
         isAutoDisconnectData = sharedPre?.getBoolean(CommHelper.IS_AUTO_DISCONNECT_DATA, isAutoDisconnectData) ?: isAutoDisconnectData
+        serviceStausBroad(true)
 
         try {
             if (phoneNum.isNotEmpty()) {
@@ -58,13 +59,7 @@ class FlowQueryService : Service() {
         noManager?.cancel(NO_CORRECT_ID) // 取消通知
         sharedPre?.edit()?.putBoolean(CommHelper.IS_FLOW_QUERY_SERVICE_RUNNING, true)?.apply()    // 服务已开启
 
-        // 保存流量查询服务状态为停止，以供MainActivity创建时显示swQueryService的状态
-        sharedPre?.edit()?.putBoolean(CommHelper.IS_FLOW_QUERY_SERVICE_RUNNING, false)?.apply()
-        // 发送流量查询服务停止的广播，以供MainActivity未销毁时实时显示swQueryService的状态
-        Log.i(CommHelper.DEBUG_TAG, "流量查询服务已停止，发送通知广播")
-        val serviceStopIntent = Intent(CommHelper.QUERY_SERVICE_ACTION)
-        serviceStopIntent.putExtra(CommHelper.IS_QUERY_SERVICE_STOP, true)
-        sendBroadcast(serviceStopIntent)
+        serviceStausBroad(false)
 
         super.onDestroy()
     }
@@ -100,7 +95,7 @@ class FlowQueryService : Service() {
                 // 负数表示为首次查询
                 if (lastUsedFlow < 0) {
                     lastUsedFlow = currentUsedFlow
-                    makeNotification("此次为首次查询", "将于下次(${queryFrequency}分钟)后开始比对，共用流量${lastUsedFlow}MB")
+                    makeNotification("此次为首次查询", "将于${queryFrequency}分钟后比对，共用流量${lastUsedFlow}MB")
                     return
                 }
                 // 比对两次流量差，判断流量跳点是否正常
@@ -157,6 +152,20 @@ class FlowQueryService : Service() {
             no.flags = no.flags or Notification.FLAG_NO_CLEAR
         }
         noManager?.notify(if (warn) NO_WARN_ID else NO_CORRECT_ID, no)
+    }
+
+    /**
+     * 发送流量查询服务状态的广播，以供MainActivity未销毁时实时显示swQueryService的状态
+     * @param status 服务开始或停止
+     */
+    private fun serviceStausBroad(status: Boolean) {
+        // 保存流量查询服务状态，以供MainActivity创建时显示swQueryService的状态
+        sharedPre?.edit()?.putBoolean(CommHelper.IS_FLOW_QUERY_SERVICE_RUNNING, status)?.apply()
+
+        Log.i(CommHelper.DEBUG_TAG, "流量查询服务状态改为：$status，发送通知广播")
+        val serviceStatusIntent = Intent(CommHelper.QUERY_SERVICE_ACTION)
+        serviceStatusIntent.putExtra(CommHelper.QUERY_SERVICE_STATUS, status)
+        sendBroadcast(serviceStatusIntent)
     }
 
     /* NetworkCallback（>= Android N）获取网络状态（鸡肋）

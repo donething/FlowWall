@@ -3,6 +3,7 @@ package net.donething.android.flowwall
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.preference.PreferenceManager
 import android.util.Log
 import android.widget.Toast
@@ -22,8 +23,7 @@ class MyBroadReceiver : BroadcastReceiver() {
         }
 
         // 网络状态改变，开启或停止流量查询服务
-        /*
-        if (intent.action == "android.net.conn.CONNECTIVITY_CHANGE") {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M && intent.action == "android.net.conn.CONNECTIVITY_CHANGE") {
             val networkStatus = CommHelper.getConnectivityStatus(ctx)
             val queryIntent = Intent(ctx, FlowQueryService::class.java)
             Log.i(CommHelper.DEBUG_TAG, "手机网络状态已改变:$networkStatus")
@@ -40,6 +40,5 @@ class MyBroadReceiver : BroadcastReceiver() {
                 }
             }
         }
-        */
     }
 }

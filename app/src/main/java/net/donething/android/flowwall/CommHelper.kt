@@ -64,6 +64,6 @@ class CommHelper {
 
         // MainActivity and FlowQueryService Broadcast
         val QUERY_SERVICE_ACTION = "net.donething.android.flowwall.query_service_ACTION"
-        val IS_QUERY_SERVICE_STOP = "is_query_service_stop"
+        val QUERY_SERVICE_STATUS = "query_service_status"
     }
 }

@@ -85,12 +85,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // 在主界面可见时，当FlowQueryService停止时，需要将swQueryService状态设为false
+    // 在主界面可见时，当FlowQueryService开启或停止时，需要更改swQueryService状态
     val queryServiceReceiver = object : BroadcastReceiver() {
         override fun onReceive(ctx: Context, intent: Intent) {
             if (intent.action == CommHelper.QUERY_SERVICE_ACTION) {
-                Log.i(CommHelper.DEBUG_TAG, "已接收到流量查询服务停止的广播，开始设置switchQueryService状态")
-                switchQueryService?.isChecked = !intent.getBooleanExtra(CommHelper.IS_QUERY_SERVICE_STOP, true)
+                val status = intent.getBooleanExtra(CommHelper.QUERY_SERVICE_STATUS, false)
+                Log.i(CommHelper.DEBUG_TAG, "已接收到流量查询服务状态改变的广播，开始设置switchQueryService状态：$status")
+                switchQueryService?.isChecked = status
             }
         }
     }
