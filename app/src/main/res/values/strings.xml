@@ -32,4 +32,6 @@
     <string name="extend_setting_title">扩展设置</string>
     <string name="is_auto_disconnect_data_summary">超过设定的断网流量差后，自动关闭移动连接（需已授予ROOT权限）</string>
     <string name="is_auto_disconnect_data_title">自动断网</string>
+    <string name="is_connect_mobile_start_summary">当连接到移动网络时，主动运行服务</string>
+    <string name="is_connect_mobile_start_title">主动运行（Android6.0.1以下可选）</string>
 </resources>

@@ -2,8 +2,12 @@ package net.donething.android.flowwall
 
 import android.content.Context
 import android.net.ConnectivityManager
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import java.io.DataOutputStream
 import java.io.IOException
+import java.net.URL
+import java.util.*
 
 
 /**
@@ -53,20 +57,47 @@ class CommHelper {
             return activeNetwork.type
         }
 
+        /**
+         * 获取流量信息
+         * @param phoneNum 带查询的手机号
+         * @return 返回流量结果数据，其中code意思：10：获取数据成功；20：获取的流量值为null；21获取流量出错；30：程序运行出现异常
+         */
+        fun queryFlowValue(phoneNum: String): JSONResult {
+            try {
+                val queryResult = URL(FLOW_QUERY_URL + phoneNum).readText()
+                val flowJson: Map<String, Any> = Gson().fromJson(queryResult, object : TypeToken<Map<String, Any>>() {}.type)
+                val flowData = flowJson["data"] as Map<String, Any>
+                if (flowJson["status"] == "success" && flowData["code"] == "10000") {
+                    val flowResult = flowData["result"] as ArrayList<Map<String, String>>
+                    val currentUsedFlow = flowResult[1]["used"]?.toDoubleOrNull()
+                    currentUsedFlow ?: return JSONResult(false, 20, queryResult)
+                    return JSONResult(true, 10, queryResult, currentUsedFlow)
+                } else {
+                    return JSONResult(false, 21, queryResult)
+                }
+            } catch (ex: Exception) {
+                return JSONResult(false, 30, ex.toString())
+            }
+        }
+
         val DEBUG_TAG = "[Flow Wall]"
 
-        val CMD_DISABLE_DATA = "svc data disable\n"   // shell关闭移动数据连接的命令
+        val CMD_DISABLE_DATA = "svc data disable\n"     // shell关闭移动数据连接的命令
 
         // SharedPreference key name
         val IS_FLOW_QUERY_SERVICE_RUNNING = "is_flow_query_service_running"     // 是否已经启动了流量查询服务
-        val PHONE_NUM = "phone_num"         // 带查询的手机号
-        val IS_BOOT_START = "is_boot_start"     // 是否开机启动查询服务
-        val QUERY_FREQUENCY = "query_frequency"
-        val FLOW_INTERVAL = "flow_interval"
-        val IS_AUTO_DISCONNECT_DATA = "is_auto_disconnect_data"
+        val PHONE_NUM = "phone_num"                     // 带查询的手机号
+        val IS_BOOT_START = "is_boot_start"             // 是否开机启动查询服务
+        val QUERY_FREQUENCY = "query_frequency"         // 查询频率
+        val FLOW_INTERVAL = "flow_interval"             // 断网流量差
+        val IS_AUTO_DISCONNECT_DATA = "is_auto_disconnect_data"     // 超过流量差时是否自动断网
+        val IS_CONNECT_MOBILE_START = "is_connect_mobile_start"     // 当连接到移动网络时主动运行服务
 
         // MainActivity and FlowQueryService Broadcast
         val QUERY_SERVICE_ACTION = "net.donething.android.flowwall.query_service_ACTION"
         val QUERY_SERVICE_STATUS = "query_service_status"
+
+        // Query flaw data
+        private val FLOW_QUERY_URL = "http://58.250.151.66/wowap-interface/flowstore/flowstoreActionQuery?mobile="
     }
 }

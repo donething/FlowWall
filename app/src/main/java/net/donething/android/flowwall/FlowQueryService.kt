@@ -12,8 +12,6 @@ import android.os.IBinder
 import android.preference.PreferenceManager
 import android.util.Log
 import com.google.gson.GsonBuilder
-import com.google.gson.reflect.TypeToken
-import java.net.URL
 import java.util.*
 
 
@@ -81,40 +79,27 @@ class FlowQueryService : Service() {
             makeNotification("暂停流量查询", "当前不是移动网络，暂停查询流量")
             return
         }
-        try {
-            val queryResult = URL(FLOW_QUERY_URL + phoneNum).readText()
-            val flowJson: Map<String, Any> = gson.fromJson(queryResult, object : TypeToken<Map<String, Any>>() {}.type)
-            val flowData = flowJson["data"] as Map<String, Any>
-            if (flowJson["status"] == "success" && flowData["code"] == "10000") {
-                val flowResult = flowData["result"] as ArrayList<Map<String, String>>
-                val currentUsedFlow = flowResult[1]["used"]?.toDoubleOrNull()
-                if (currentUsedFlow == null) {
-                    makeNotification("流量查询出错", queryResult, true)
-                    stopSelf()
-                    return
-                }
-                // 负数表示为首次查询
-                if (lastUsedFlow < 0) {
-                    lastUsedFlow = currentUsedFlow
-                    makeNotification("此次为首次查询", "将于${queryFrequency}分钟后比对，共用流量${lastUsedFlow}MB")
-                    return
-                }
-                // 比对两次流量差，判断流量跳点是否正常
-                val flowInterval = currentUsedFlow - lastUsedFlow
-                if (flowInterval >= this.flowInterval) {
-                    makeNotification("警告：流量跳点过高", "%d分钟内跳点%.2fMB（已用${currentUsedFlow}MB），已关闭移动网络".format(queryFrequency, flowInterval), true)
-                    if (isAutoDisconnectData) CommHelper.runCmdAsSu(CommHelper.CMD_DISABLE_DATA)    // 可选断网
-                    stopSelf()
-                } else {
-                    makeNotification("流量跳点正常", "跳点%.2fMB，共用流量%.2fMB".format(flowInterval, currentUsedFlow))
-                }
+        val flowJSONResult = CommHelper.queryFlowValue(phoneNum)
+        if (flowJSONResult.success) {
+            val currentUsedFlow = flowJSONResult.result.toString().toDouble()
+            // 负数表示为首次查询
+            if (lastUsedFlow < 0) {
                 lastUsedFlow = currentUsedFlow
-            } else {
-                makeNotification("流量查询出错", flowData["message"].toString(), true)
-                stopSelf()
+                makeNotification("此次为首次查询", "将于${queryFrequency}分钟后比对，共用流量${lastUsedFlow}MB")
+                return
             }
-        } catch (ex: Exception) {
-            makeNotification("APP运行出现异常", ex.toString(), true)
+            // 比对两次流量差，判断流量跳点是否正常
+            val flowInterval = currentUsedFlow - lastUsedFlow
+            if (flowInterval >= this.flowInterval) {
+                makeNotification("警告：跳点过高，已关闭移动网络", "%d分钟内跳点%.2fMB，已用${currentUsedFlow}MB".format(queryFrequency, flowInterval), true)
+                if (isAutoDisconnectData) CommHelper.runCmdAsSu(CommHelper.CMD_DISABLE_DATA)    // 可选断网
+                stopSelf()
+            } else {
+                makeNotification("流量跳点正常", "跳点%.2fMB，共用流量%.2fMB".format(flowInterval, currentUsedFlow))
+            }
+            lastUsedFlow = currentUsedFlow
+        } else {
+            makeNotification("查询流量出错", flowJSONResult.msg, true)
             stopSelf()
         }
     }
@@ -210,7 +195,6 @@ class FlowQueryService : Service() {
     private var sharedPre: SharedPreferences? = null
     private var connManager: ConnectivityManager? = null
 
-    private val FLOW_QUERY_URL = "http://58.250.151.66/wowap-interface/flowstore/flowstoreActionQuery?mobile="
     private var phoneNum = ""
     private val gson = GsonBuilder().setPrettyPrinting().create()
 

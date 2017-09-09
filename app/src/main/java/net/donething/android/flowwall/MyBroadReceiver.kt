@@ -29,7 +29,8 @@ class MyBroadReceiver : BroadcastReceiver() {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M && intent.action == "android.net.conn.CONNECTIVITY_CHANGE") {
             val queryIntent = Intent(ctx, FlowQueryService::class.java)
             Log.i(CommHelper.DEBUG_TAG, "手机网络状态已改变为:" + CommHelper.getConnectivityStatus(ctx, true))
-            if (CommHelper.getConnectivityStatus(ctx) == ConnectivityManager.TYPE_MOBILE) {
+            if (CommHelper.getConnectivityStatus(ctx) == ConnectivityManager.TYPE_MOBILE
+                    && sharedPre.getBoolean(CommHelper.IS_CONNECT_MOBILE_START, true)) {
                 Log.i(CommHelper.DEBUG_TAG, "已改变为移动网络，开启流量查询服务")
                 Toast.makeText(ctx, "已改变为移动网络，开启流量查询服务", Toast.LENGTH_SHORT).show()
                 ctx.startService(queryIntent)
