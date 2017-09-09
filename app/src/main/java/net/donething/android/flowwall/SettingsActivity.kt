@@ -80,6 +80,7 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             bindPreferenceSummaryToValue(findPreference(CommHelper.PHONE_NUM))
             bindPreferenceSummaryToValue(findPreference(CommHelper.QUERY_FREQUENCY))
             bindPreferenceSummaryToValue(findPreference(CommHelper.FLOW_INTERVAL))
+            // 通过代码显示指定的内容
             findPreference(CommHelper.APP_VERSION).summary = activity.packageManager.getPackageInfo(activity.packageName, PackageManager.GET_CONFIGURATIONS).versionName
             findPreference(CommHelper.ANDROID_ID).summary = Settings.Secure.getString(activity.contentResolver, Settings.Secure.ANDROID_ID)
         }

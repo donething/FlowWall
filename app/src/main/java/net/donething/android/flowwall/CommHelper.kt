@@ -93,8 +93,8 @@ class CommHelper {
         val FLOW_INTERVAL = "flow_interval"             // 断网流量差
         val IS_AUTO_DISCONNECT_DATA = "is_auto_disconnect_data"     // 超过流量差时是否自动断网
         val IS_CONNECT_MOBILE_START = "is_connect_mobile_start"     // 当连接到移动网络时主动运行服务
-        val APP_VERSION = "app_version"
-        val ANDROID_ID = "android_id"
+        val APP_VERSION = "app_version"                 // 应用版本
+        val ANDROID_ID = "android_id"                   // Android ID
 
 
         // MainActivity and FlowQueryService Broadcast
