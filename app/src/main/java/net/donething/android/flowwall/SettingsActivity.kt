@@ -9,7 +9,6 @@ import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.preference.*
-import android.provider.Settings
 import android.text.TextUtils
 import android.view.MenuItem
 
@@ -82,7 +81,6 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             bindPreferenceSummaryToValue(findPreference(CommHelper.FLOW_INTERVAL))
             // 通过代码显示指定的内容
             findPreference(CommHelper.APP_VERSION).summary = activity.packageManager.getPackageInfo(activity.packageName, PackageManager.GET_CONFIGURATIONS).versionName
-            findPreference(CommHelper.ANDROID_ID).summary = Settings.Secure.getString(activity.contentResolver, Settings.Secure.ANDROID_ID)
         }
 
         override fun onOptionsItemSelected(item: MenuItem): Boolean {
