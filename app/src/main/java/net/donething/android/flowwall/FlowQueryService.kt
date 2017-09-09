@@ -43,7 +43,7 @@ class FlowQueryService : Service() {
 
         try {
             if (phoneNum.isNotEmpty()) {
-                timer.schedule(queryTask, 0, queryFrequency * 60 * 1000L)
+                Timer().schedule(queryTask, 0, queryFrequency * 60 * 1000L)
                 makeNotification("正在查询流量……", "请稍等3秒会自动更新通知……")
             } else {
                 makeNotification("没有填写手机号", "请先进入设置中填写手机号", true)
@@ -77,8 +77,8 @@ class FlowQueryService : Service() {
      */
     private fun queryFlow() {
         // 非移动网络时，无需查询流量
-        if (CommHelper.getConnectivityStatus(this).toString().toInt() != ConnectivityManager.TYPE_MOBILE) {
-            makeNotification("暂停流量查询", "当前为非移动网络，无需查询流量")
+        if (CommHelper.getConnectivityStatus(this) != ConnectivityManager.TYPE_MOBILE) {
+            makeNotification("暂停流量查询", "当前不是移动网络，暂停查询流量")
             return
         }
         try {
@@ -102,7 +102,7 @@ class FlowQueryService : Service() {
                 // 比对两次流量差，判断流量跳点是否正常
                 val flowInterval = currentUsedFlow - lastUsedFlow
                 if (flowInterval >= this.flowInterval) {
-                    makeNotification("流量跳点过高", "%d分钟内跳点%.2fMB，已关闭数据连接".format(queryFrequency, flowInterval))
+                    makeNotification("警告：流量跳点过高", "%d分钟内跳点%.2fMB（已用${currentUsedFlow}MB），已关闭移动网络".format(queryFrequency, flowInterval), true)
                     if (isAutoDisconnectData) CommHelper.runCmdAsSu(CommHelper.CMD_DISABLE_DATA)    // 可选断网
                     stopSelf()
                 } else {
@@ -207,22 +207,21 @@ class FlowQueryService : Service() {
     }
     */
 
-    var sharedPre: SharedPreferences? = null
-    var connManager: ConnectivityManager? = null
+    private var sharedPre: SharedPreferences? = null
+    private var connManager: ConnectivityManager? = null
 
-    val timer = Timer()     // 定时器
-    val FLOW_QUERY_URL = """http://58.250.151.66/wowap-interface/flowstore/flowstoreActionQuery?mobile="""
-    var phoneNum = ""
-    val gson = GsonBuilder().setPrettyPrinting().create()
+    private val FLOW_QUERY_URL = "http://58.250.151.66/wowap-interface/flowstore/flowstoreActionQuery?mobile="
+    private var phoneNum = ""
+    private val gson = GsonBuilder().setPrettyPrinting().create()
 
-    var noManager: NotificationManager? = null      // 通知管理
-    var noBuilderCorrect: Notification.Builder? = null     // 正常运行时的notification的Builder，用于更新notification显示文本
-    var noBuilderWarn: Notification.Builder? = null  // APP运行异常或流量跳点超过阀值时的notification的Builder，用于更新notification显示文本
-    val NO_CORRECT_ID = 8844  // 正常运行时的notification的ID
-    val NO_WARN_ID = 8848  // 发生异常时的notification的ID
+    private var noManager: NotificationManager? = null      // 通知管理
+    private var noBuilderCorrect: Notification.Builder? = null     // 正常运行时的notification的Builder，用于更新notification显示文本
+    private var noBuilderWarn: Notification.Builder? = null  // APP运行异常或流量跳点超过阀值时的notification的Builder，用于更新notification显示文本
+    private val NO_CORRECT_ID = 8844  // 正常运行时的notification的ID
+    private val NO_WARN_ID = 8848  // 发生异常时的notification的ID
 
-    var lastUsedFlow = -1.0  // 记录上次查询到的已使用流量（负数表示为首次查询）
-    var queryFrequency = 3   // 流量查询间隔（分钟）
-    var flowInterval = 3.0F   // 流量跳点阀值（MB）
-    var isAutoDisconnectData = false    // 自动断网
+    private var lastUsedFlow = -1.0  // 记录上次查询到的已使用流量（负数表示为首次查询）
+    private var queryFrequency = 3   // 流量查询间隔（分钟）
+    private var flowInterval = 3.0F   // 流量跳点阀值（MB）
+    private var isAutoDisconnectData = false    // 自动断网
 }

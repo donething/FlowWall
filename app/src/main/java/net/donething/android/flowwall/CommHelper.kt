@@ -5,6 +5,7 @@ import android.net.ConnectivityManager
 import java.io.DataOutputStream
 import java.io.IOException
 
+
 /**
  * Created by donet on 17-9-4.
  */

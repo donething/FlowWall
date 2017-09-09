@@ -15,14 +15,13 @@ import android.widget.Toast
 class MyBroadReceiver : BroadcastReceiver() {
     override fun onReceive(ctx: Context, intent: Intent) {
         val sharedPre = PreferenceManager.getDefaultSharedPreferences(ctx)
-        val networkStatus = CommHelper.getConnectivityStatus(ctx).toString().toInt()
         // 开启流量跳点查询服务
         if (intent.action == "android.intent.action.BOOT_COMPLETED" && sharedPre.getBoolean(CommHelper.IS_BOOT_START, false)) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N || networkStatus == ConnectivityManager.TYPE_MOBILE) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N || CommHelper.getConnectivityStatus(ctx) == ConnectivityManager.TYPE_MOBILE) {
                 val queryIntent = Intent(ctx, FlowQueryService::class.java)
                 Log.i(CommHelper.DEBUG_TAG, "开机启动，已开启流量跳点查询服务！")
                 Toast.makeText(ctx, "开机启动，已开启流量跳点查询服务！", Toast.LENGTH_SHORT).show()
-                // ctx.startService(queryIntent)
+                ctx.startService(queryIntent)
             }
         }
 
@@ -30,14 +29,16 @@ class MyBroadReceiver : BroadcastReceiver() {
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.M && intent.action == "android.net.conn.CONNECTIVITY_CHANGE") {
             val queryIntent = Intent(ctx, FlowQueryService::class.java)
             Log.i(CommHelper.DEBUG_TAG, "手机网络状态已改变为:" + CommHelper.getConnectivityStatus(ctx, true))
-            if (networkStatus == ConnectivityManager.TYPE_MOBILE) {
+            if (CommHelper.getConnectivityStatus(ctx) == ConnectivityManager.TYPE_MOBILE) {
                 Log.i(CommHelper.DEBUG_TAG, "已改变为移动网络，开启流量查询服务")
                 Toast.makeText(ctx, "已改变为移动网络，开启流量查询服务", Toast.LENGTH_SHORT).show()
                 ctx.startService(queryIntent)
             } else {
-                Log.i(CommHelper.DEBUG_TAG, "已改变为非移动网络，停止流量查询服务")
-                Toast.makeText(ctx, "已改变为非移动网络，停止流量查询服务", Toast.LENGTH_SHORT).show()
-                ctx.stopService(queryIntent)
+                if (sharedPre.getBoolean(CommHelper.IS_FLOW_QUERY_SERVICE_RUNNING, false)) {
+                    Log.i(CommHelper.DEBUG_TAG, "已改变为非移动网络，停止流量查询服务")
+                    Toast.makeText(ctx, "已改变为非移动网络，停止流量查询服务", Toast.LENGTH_SHORT).show()
+                    ctx.stopService(queryIntent)
+                }
             }
         }
     }
