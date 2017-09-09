@@ -13,6 +13,7 @@ import java.util.*
 /**
  * Created by donet on 17-9-4.
  */
+
 class CommHelper {
     companion object {
         /**
@@ -60,7 +61,7 @@ class CommHelper {
         /**
          * 获取流量信息
          * @param phoneNum 带查询的手机号
-         * @return 返回流量结果数据，其中code意思：10：获取数据成功；20：获取的流量值为null；21获取流量出错；30：程序运行出现异常
+         * @return 返回流量结果数据，其中code意思：10：获取数据成功；20：获取的流量值为null；21从获取的json字符串中解析不到有用数据；30：程序运行出现异常
          */
         fun queryFlowValue(phoneNum: String): JSONResult {
             try {
