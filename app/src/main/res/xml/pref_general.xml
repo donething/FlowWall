@@ -43,4 +43,17 @@
             android:summary="@string/is_connect_mobile_start_summary"
             android:title="@string/is_connect_mobile_start_title" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="@string/other_info_title">
+        <Preference
+            android:enabled="true"
+            android:key="app_version"
+            android:summary="软件版本号"
+            android:title="软件版本" />
+        <Preference
+            android:enabled="true"
+            android:key="android_id"
+            android:summary="Android ID"
+            android:title="Android ID" />
+    </PreferenceCategory>
 </PreferenceScreen>
