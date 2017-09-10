@@ -83,6 +83,10 @@ class SettingsActivity : AppCompatPreferenceActivity() {
             // 通过代码显示指定的内容
             findPreference(CommHelper.APP_VERSION).summary = activity.packageManager.getPackageInfo(activity.packageName, PackageManager.GET_CONFIGURATIONS).versionName
             findPreference(CommHelper.ANDROID_ID).summary = Settings.Secure.getString(activity.contentResolver, Settings.Secure.ANDROID_ID)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                findPreference(CommHelper.IS_CONNECT_MOBILE_START).isEnabled = false
+            }
         }
 
         override fun onOptionsItemSelected(item: MenuItem): Boolean {

@@ -12,6 +12,8 @@ import android.view.MenuItem
 import android.widget.CompoundButton
 import android.widget.Switch
 import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.content_main.*
+import org.json.JSONObject
 
 class MainActivity : AppCompatActivity() {
 
@@ -20,9 +22,12 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
         setSupportActionBar(toolbar)
 
+        fab.hide()
+        /*
         fab.setOnClickListener { view ->
             Snackbar.make(view, "Hello.", Snackbar.LENGTH_LONG).setAction("Action", null).show()
         }
+        */
 
         CommHelper.runCmdAsSu("exit\n")
 
@@ -37,6 +42,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        Thread(queryTask).start()
     }
 
     override fun onDestroy() {
@@ -48,11 +54,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         // Inflate the menu; this adds items to the action bar if it is present.
         menuInflater.inflate(R.menu.menu_main, menu)
-        this.switchQueryService = menu.findItem(R.id.menuQueryService).actionView.findViewById<Switch>(R.id.swQueryService)
+        this.switchQueryService = menu.findItem(R.id.menuQueryService).actionView.findViewById(R.id.swQueryService)
         val switchQueryService = this.switchQueryService ?: return true
         switchQueryService.isChecked = sharedPre?.getBoolean(CommHelper.IS_FLOW_QUERY_SERVICE_RUNNING, false) ?: false
-        switchQueryService.setOnCheckedChangeListener {
-            btn, isChecked ->
+        switchQueryService.setOnCheckedChangeListener { btn, isChecked ->
             startOrStopQueryService(btn, isChecked)
         }
         return true
@@ -74,7 +79,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun startOrStopQueryService(btn: CompoundButton, isStart: Boolean) {
+    private fun startOrStopQueryService(btn: CompoundButton, isStart: Boolean) {
         val queryIntent = Intent(this, FlowQueryService::class.java)
         if (isStart) {
             startService(queryIntent)
@@ -86,7 +91,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // 在主界面可见时，当FlowQueryService开启或停止时，需要更改swQueryService状态
-    val queryServiceReceiver = object : BroadcastReceiver() {
+    private val queryServiceReceiver = object : BroadcastReceiver() {
         override fun onReceive(ctx: Context, intent: Intent) {
             if (intent.action == CommHelper.QUERY_SERVICE_ACTION) {
                 val status = intent.getBooleanExtra(CommHelper.QUERY_SERVICE_STATUS, false)
@@ -96,6 +101,25 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    var sharedPre: SharedPreferences? = null
-    var switchQueryService: Switch? = null
+    // 查询流量
+    private val queryTask = Runnable {
+        val phoneNum = sharedPre?.getString(CommHelper.PHONE_NUM, "") ?: ""
+        val queryJSONResult = CommHelper.queryFlowValue(phoneNum)
+        runOnUiThread {
+            if (phoneNum == "") {
+                flow_query_text.text = "还没有填写手机号"
+                return@runOnUiThread
+            }
+
+            if (queryJSONResult.success) {
+                flow_query_text.text = "$phoneNum 流量情况：\n" + JSONObject(queryJSONResult.msg)
+                        .getJSONObject("data").getJSONArray("result").toString(4)
+            } else {
+                flow_query_text.text = "$phoneNum 流量查询出错：\n" + JSONObject(queryJSONResult.msg).toString(4)
+            }
+        }
+    }
+
+    private var sharedPre: SharedPreferences? = null
+    private var switchQueryService: Switch? = null
 }

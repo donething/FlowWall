@@ -22,7 +22,7 @@
         <item>30</item>
     </string-array>
 
-    <string name="phone_num_title">手机号码</string>
+    <string name="phone_num_title">手机号码（仅联通）</string>
     <string name="boot_start_title">开机启动</string>
     <string name="boot_start_summary">是否开机自启动流量查询服务</string>
     <string name="query_frequency_title">查询间隔</string>
@@ -33,6 +33,6 @@
     <string name="is_auto_disconnect_data_summary">超过设定的断网流量差后，自动关闭移动连接（需已授予ROOT权限）</string>
     <string name="is_auto_disconnect_data_title">自动断网</string>
     <string name="is_connect_mobile_start_summary">当连接到移动网络时，主动运行服务</string>
-    <string name="is_connect_mobile_start_title">主动运行（Android6.0.1以下可选）</string>
+    <string name="is_connect_mobile_start_title">主动运行（Android6.0.1以下）</string>
     <string name="other_info_title">其它信息</string>
 </resources>

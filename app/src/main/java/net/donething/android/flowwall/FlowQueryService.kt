@@ -11,7 +11,6 @@ import android.net.ConnectivityManager
 import android.os.IBinder
 import android.preference.PreferenceManager
 import android.util.Log
-import com.google.gson.GsonBuilder
 import java.util.*
 
 
@@ -196,7 +195,6 @@ class FlowQueryService : Service() {
     private var connManager: ConnectivityManager? = null
 
     private var phoneNum = ""
-    private val gson = GsonBuilder().setPrettyPrinting().create()
 
     private var noManager: NotificationManager? = null      // 通知管理
     private var noBuilderCorrect: Notification.Builder? = null     // 正常运行时的notification的Builder，用于更新notification显示文本
