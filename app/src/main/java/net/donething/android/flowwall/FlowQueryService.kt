@@ -1,6 +1,5 @@
 package net.donething.android.flowwall
 
-import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
@@ -10,6 +9,7 @@ import android.content.SharedPreferences
 import android.net.ConnectivityManager
 import android.os.IBinder
 import android.preference.PreferenceManager
+import android.support.v4.app.NotificationCompat
 import android.util.Log
 import java.util.*
 
@@ -90,9 +90,12 @@ class FlowQueryService : Service() {
             // 比对两次流量差，判断流量跳点是否正常
             val flowInterval = currentUsedFlow - lastUsedFlow
             if (flowInterval >= this.flowInterval) {
-                makeNotification("警告：跳点过高，已关闭移动网络", "%d分钟内跳点%.2fMB，已用${currentUsedFlow}MB".format(queryFrequency, flowInterval), true)
-                if (isAutoDisconnectData) CommHelper.runCmdAsSu(CommHelper.CMD_DISABLE_DATA)    // 可选断网
-                stopSelf()
+                makeNotification("警告：跳点过高${if(isAutoDisconnectData) "，已关闭移动网络" else ""}", "%d分钟内跳点%.2fMB，已用${currentUsedFlow}MB".format(queryFrequency, flowInterval), true)
+                // 可选断网
+                if (isAutoDisconnectData) {
+                    CommHelper.runCmdAsSu(CommHelper.CMD_DISABLE_DATA)
+                    stopSelf()
+                }
             } else {
                 makeNotification("流量跳点正常", "跳点%.2fMB，共用流量%.2fMB".format(flowInterval, currentUsedFlow))
             }
@@ -106,15 +109,14 @@ class FlowQueryService : Service() {
     /**
      * 创建通知Builder对象
      */
-    private fun createNoBuilder(): Notification.Builder {
+    private fun createNoBuilder(): NotificationCompat.Builder {
         val mainIntent = PendingIntent.getActivity(this, 0,
                 Intent(this, MainActivity::class.java).setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP), 0)
-        val builder = Notification.Builder(this)
+        return NotificationCompat.Builder(this)
                 .setSmallIcon(R.drawable.no_flow)
                 .setShowWhen(true)
                 .setContentIntent(mainIntent)
-                .setVisibility(Notification.VISIBILITY_PUBLIC)
-        return builder
+                .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
     }
 
     /**
@@ -125,16 +127,20 @@ class FlowQueryService : Service() {
      */
     private fun makeNotification(title: String, text: String, warn: Boolean = false) {
         val noBuilder = (if (warn) noBuilderWarn else noBuilderCorrect) ?: createNoBuilder()
+        if (warn) {
+            noBuilder.setStyle(NotificationCompat.BigTextStyle())
+        }
         noBuilder.setWhen(System.currentTimeMillis())
                 .setContentTitle(title)
                 .setContentText(text)
         val no = noBuilder.build()
         if (warn) {
-            no.flags = no.flags or Notification.FLAG_AUTO_CANCEL
-            no.priority = Notification.PRIORITY_MAX
-            no.defaults = no.defaults or Notification.DEFAULT_SOUND or Notification.DEFAULT_LIGHTS
+            no.flags = no.flags or NotificationCompat.FLAG_AUTO_CANCEL
+            no.priority = NotificationCompat.PRIORITY_MAX
+            no.defaults = no.defaults or NotificationCompat.DEFAULT_SOUND or NotificationCompat.DEFAULT_LIGHTS
         } else {
-            no.flags = no.flags or Notification.FLAG_NO_CLEAR
+            no.flags = no.flags or NotificationCompat.FLAG_NO_CLEAR
+            no.priority = NotificationCompat.PRIORITY_HIGH
         }
         noManager?.notify(if (warn) NO_WARN_ID else NO_CORRECT_ID, no)
     }
@@ -197,8 +203,8 @@ class FlowQueryService : Service() {
     private var phoneNum = ""
 
     private var noManager: NotificationManager? = null      // 通知管理
-    private var noBuilderCorrect: Notification.Builder? = null     // 正常运行时的notification的Builder，用于更新notification显示文本
-    private var noBuilderWarn: Notification.Builder? = null  // APP运行异常或流量跳点超过阀值时的notification的Builder，用于更新notification显示文本
+    private var noBuilderCorrect: NotificationCompat.Builder? = null     // 正常运行时的notification的Builder，用于更新notification显示文本
+    private var noBuilderWarn: NotificationCompat.Builder? = null  // APP运行异常或流量跳点超过阀值时的notification的Builder，用于更新notification显示文本
     private val NO_CORRECT_ID = 8844  // 正常运行时的notification的ID
     private val NO_WARN_ID = 8848  // 发生异常时的notification的ID
 
