@@ -142,6 +142,7 @@ class FlowQueryService : Service() {
             no.flags = no.flags or NotificationCompat.FLAG_NO_CLEAR
             no.priority = NotificationCompat.PRIORITY_HIGH
         }
+
         noManager?.notify(if (warn) NO_WARN_ID else NO_CORRECT_ID, no)
     }
 
