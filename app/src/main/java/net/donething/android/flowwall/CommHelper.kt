@@ -2,12 +2,10 @@ package net.donething.android.flowwall
 
 import android.content.Context
 import android.net.ConnectivityManager
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
+import org.json.JSONObject
 import java.io.DataOutputStream
 import java.io.IOException
 import java.net.URL
-import java.util.*
 
 
 /**
@@ -66,11 +64,11 @@ class CommHelper {
         fun queryFlowValue(phoneNum: String): JSONResult {
             try {
                 val queryResult = URL(FLOW_QUERY_URL + phoneNum).readText()
-                val flowJson: Map<String, Any> = Gson().fromJson(queryResult, object : TypeToken<Map<String, Any>>() {}.type)
-                val flowData = flowJson["data"] as Map<String, Any>
+                val flowJson = JSONObject(queryResult)
+                val flowData = flowJson.getJSONObject("data")
                 if (flowJson["status"] == "success" && flowData["code"] == "10000") {
-                    val flowResult = flowData["result"] as ArrayList<Map<String, String>>
-                    val currentUsedFlow = flowResult[1]["used"]?.toDoubleOrNull()
+                    val flowResult = flowData.getJSONArray("result")
+                    val currentUsedFlow = (flowResult[1] as JSONObject).getString("used").toDoubleOrNull()
                     currentUsedFlow ?: return JSONResult(false, 20, queryResult)
                     return JSONResult(true, 10, queryResult, currentUsedFlow)
                 } else {
@@ -92,7 +90,7 @@ class CommHelper {
         val QUERY_FREQUENCY = "query_frequency"         // 查询频率
         val FLOW_INTERVAL = "flow_interval"             // 断网流量差
         val IS_AUTO_DISCONNECT_DATA = "is_auto_disconnect_data"     // 超过流量差时是否自动断网
-        val IS_CONNECT_MOBILE_START = "is_connect_mobile_start"     // 当连接到移动网络时主动运行服务
+        val IS_CONNECT_MOBILE_START = "is_connect_mobile_start"     // 当连接到移动网络时主动运行服务（接收网络状态改变的广播 <=Android6.0.1）
         val APP_VERSION = "app_version"                 // 应用版本
         val ANDROID_ID = "android_id"                   // Android ID
 
