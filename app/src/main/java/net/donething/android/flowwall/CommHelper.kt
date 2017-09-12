@@ -121,8 +121,6 @@ class CommHelper {
         val IS_AUTO_DISCONNECT_DATA = "is_auto_disconnect_data"     // 超过流量差时是否自动断网
         val IS_CONNECT_MOBILE_START = "is_connect_mobile_start"     // 当连接到移动网络时主动运行服务（接收网络状态改变的广播 <=Android6.0.1）
         val APP_VERSION = "app_version"                 // 应用版本
-        val ANDROID_ID = "android_id"                   // Android ID
-
 
         // MainActivity and FlowQueryService Broadcast
         val QUERY_SERVICE_ACTION = "net.donething.android.flowwall.query_service_ACTION"
