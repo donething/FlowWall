@@ -2,9 +2,13 @@ package net.donething.android.flowwall
 
 import android.content.Context
 import android.net.ConnectivityManager
+import android.util.Log
 import org.json.JSONObject
+import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.IOException
+import java.io.InputStreamReader
+import java.net.HttpURLConnection
 import java.net.URL
 
 
@@ -62,8 +66,10 @@ class CommHelper {
          * @return 返回流量结果数据，其中code意思：10：获取数据成功；20：获取的流量值为null；21从获取的json字符串中解析不到有用数据；30：程序运行出现异常
          */
         fun queryFlowValue(phoneNum: String): JSONResult {
+            val query = readText(FLOW_QUERY_URL + phoneNum)
+            val queryResult: String
+            if (query.success) queryResult = query.result.toString() else return JSONResult(false, 30, query.msg)
             try {
-                val queryResult = URL(FLOW_QUERY_URL + phoneNum).readText()
                 val flowJson = JSONObject(queryResult)
                 val flowData = flowJson.getJSONObject("data")
                 if (flowJson["status"] == "success" && flowData["code"] == "10000") {
@@ -76,6 +82,29 @@ class CommHelper {
                 }
             } catch (ex: Exception) {
                 return JSONResult(false, 30, ex.toString())
+            }
+        }
+
+        /**
+         * 获取制定URL的文本
+         * @param url 待获取文本的URL
+         * @param retry 发生异常时尝试的次数
+         * @return 结果对象
+         */
+        fun readText(url: String, retry: Int = URL_MAX_RETRY): JSONResult {
+            try {
+                val conn = URL(url).openConnection() as HttpURLConnection
+                conn.connectTimeout = 5000
+                conn.readTimeout = 3000
+                val br = BufferedReader(InputStreamReader(conn.inputStream))
+                val text = br.readText()
+                return JSONResult(true, 10, "成功读取连接内容", text)
+            } catch (ex: Exception) {
+                Log.e(DEBUG_TAG, "此为第${Companion.URL_MAX_RETRY - retry + 1}次获取网络文本异常：$ex")
+                if (retry == 1) {
+                    return JSONResult(false, 20, ex.toString())
+                }
+                return readText(url, retry - 1)
             }
         }
 
@@ -101,5 +130,6 @@ class CommHelper {
 
         // Query flaw data
         private val FLOW_QUERY_URL = "http://58.250.151.66/wowap-interface/flowstore/flowstoreActionQuery?mobile="
+        val URL_MAX_RETRY = 3   // URL连接出错时，最大尝试次数
     }
 }
